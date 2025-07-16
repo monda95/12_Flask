@@ -1,14 +1,18 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 from flask_smorest import Api
+from flask_migrate import Migrate
+
 from db import db
 from models import User, Board
 
+
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:dada0605@localhost/oz'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:dada0605@localhost/blog'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db.init_app(app)
+migrate = Migrate(app, db)
 
 #blueprint설정
 app.config["API_TITLE"] = "My API"
