@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo List</title>
+</head>
+<body>
+    <h1>My Todos</h1>
+
+    <form id="todo-form">
+        <input type="text" id="todo-title" placeholder="Enter new todo..." required>
+        <button type="submit">Add</button>
+    </form>
+
+    <ul id="todo-list"></ul>
+
+    <script>
+        const token = localStorage.getItem("access_token");
+
+        if (!token) {
+            alert("Not logged in");
+            window.location.href = "/login.html";
+        }
+
+        async function loadTodos() {
+            const res = await fetch("/todo/", {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const todos = await res.json();
+            const list = document.getElementById("todo-list");
+            list.innerHTML = "";
+
+            todos.forEach(todo => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <span>${todo.title}</span> 
+                    [<a href="#" onclick="toggleCompleted(${todo.id}, ${todo.completed})">
+                        ${todo.completed ? '✅' : '⬜'}
+                    </a>] 
+                    <a href="#" onclick="deleteTodo(${todo.id})">❌</a>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        async function toggleCompleted(id, current) {
+            await fetch(`/todo/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ completed: !current })
+            });
+            loadTodos();
+        }
+
+        async function deleteTodo(id) {
+            await fetch(`/todo/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            loadTodos();
+        }
+
+        document.getElementById("todo-form").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const title = document.getElementById("todo-title").value;
+
+            await fetch("/todo/", {
+                meth
